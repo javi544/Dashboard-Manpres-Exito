@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Mantenimientos Preventivos – Toshiba GCS Colombia</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f3f0; color: #0b0b0b; min-height: 100vh; padding: 1.5rem; }
+.container { max-width: 1100px; margin: 0 auto; }
+.header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: #fff; border-radius: 12px; border: 0.5px solid #e1e0d9; margin-bottom: 1.5rem; }
+.header-title { font-size: 17px; font-weight: 500; color: #0b0b0b; margin-bottom: 2px; }
+.header-sub { font-size: 12px; color: #898781; }
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+.badge-success { background: #eaf3de; color: #3b6d11; }
+.badge-warning { background: #faeeda; color: #854f0b; }
+.badge-neutral { background: #f4f3f0; color: #898781; border: 0.5px solid #e1e0d9; }
+.badge-danger { background: #fcebeb; color: #a32d2d; }
+.upload-zone { border: 1.5px dashed #b4b2a9; border-radius: 12px; padding: 2rem 1.5rem; text-align: center; cursor: pointer; transition: background 0.15s; margin: 0 0 1.5rem; background: #fff; }
+.upload-zone:hover { background: #f4f3f0; }
+.upload-zone.dragging { background: #e6f1fb; border-color: #378add; }
+.upload-label { font-size: 14px; color: #52514e; }
+.upload-hint { font-size: 12px; color: #898781; margin-top: 6px; line-height: 1.6; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; border: 0.5px solid #b4b2a9; background: transparent; color: #0b0b0b; font-size: 13px; cursor: pointer; transition: background 0.1s; font-family: inherit; }
+.btn:hover { background: #f4f3f0; }
+.btn-primary { background: #0c3d6b; color: #fff; border-color: #0c3d6b; }
+.btn-primary:hover { background: #0a3259; }
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+.kpi { background: #f4f3f0; border-radius: 8px; padding: 14px 16px; }
+.kpi-label { font-size: 11px; color: #898781; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+.kpi-value { font-size: 24px; font-weight: 500; color: #0b0b0b; line-height: 1; }
+.kpi-sub { font-size: 11px; color: #898781; margin-top: 3px; }
+.kpi-highlight { background: #0c3d6b; }
+.kpi-highlight .kpi-label { color: rgba(255,255,255,0.65); }
+.kpi-highlight .kpi-value { color: #fff; font-size: 28px; }
+.kpi-highlight .kpi-sub { color: rgba(255,255,255,0.55); }
+.section-title { font-size: 12px; font-weight: 500; color: #52514e; margin-bottom: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+.regionals { display: flex; flex-direction: column; gap: 10px; }
+.regional-card { background: #fff; border: 0.5px solid #e1e0d9; border-radius: 12px; padding: 14px 16px; }
+.regional-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.regional-name { font-size: 14px; font-weight: 500; color: #0b0b0b; display: flex; align-items: center; gap: 8px; }
+.regional-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.regional-right { display: flex; align-items: center; gap: 14px; }
+.regional-count { font-size: 12px; color: #898781; }
+.regional-pct { font-size: 20px; font-weight: 500; min-width: 48px; text-align: right; }
+.progress-track { height: 8px; border-radius: 4px; background: #f4f3f0; overflow: hidden; border: 0.5px solid #e1e0d9; }
+.progress-bar { height: 100%; border-radius: 4px; transition: width 0.7s ease; }
+.progress-detail { display: flex; justify-content: space-between; margin-top: 6px; }
+.progress-detail span { font-size: 11px; color: #898781; }
+.indep-row { display: flex; gap: 10px; margin-top: 8px; }
+.indep-pill { flex: 1; border-radius: 6px; padding: 6px 10px; }
+.indep-pill-label { font-size: 10px; font-weight: 500; letter-spacing: 0.03em; text-transform: uppercase; }
+.indep-pill-val { font-size: 13px; font-weight: 500; margin-top: 2px; }
+.chart-section { background: #fff; border: 0.5px solid #e1e0d9; border-radius: 12px; padding: 14px 16px; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #52514e; }
+.legend-sq { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.empty-state { text-align: center; padding: 3rem 1rem; }
+.empty-icon { font-size: 48px; margin-bottom: 10px; }
+.empty-title { font-size: 15px; font-weight: 500; color: #52514e; margin-bottom: 4px; }
+.empty-desc { font-size: 13px; color: #898781; }
+.footer-brand { font-size: 11px; color: #b4b2a9; text-align: right; margin-top: 1.25rem; }
+#fileInput { display: none; }
+@media (max-width: 700px) { .main-grid { grid-template-columns: 1fr !important; } .kpi-row { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div>
+      <div class="header-title">💻 Mantenimientos Preventivos</div>
+      <div class="header-sub">Grupo Éxito · Toshiba GCS Colombia</div>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <span id="statusBadge" class="badge badge-neutral">Sin datos</span>
+      <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">↑ Cargar Excel</button>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFile(event)">
+    </div>
+  </div>
+
+  <div id="uploadZone" class="upload-zone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave()" onclick="document.getElementById('fileInput').click()">
+    <div style="font-size:36px; color:#b4b2a9; margin-bottom:8px;">📊</div>
+    <div class="upload-label">Arrastra tu archivo de Excel o haz clic aquí para seleccionarlo</div>
+    <div class="upload-hint">
+      Compatible con dos formatos:<br>
+      <strong>Formato A (totales):</strong> Regionales | Total tiendas | Total Realizadas | avance | %<br>
+      <strong>Formato B (detalle):</strong> Regional | Estado (Completado / Pendiente) — una fila por registro
+    </div>
+  </div>
+
+  <div id="dashContent" style="display:none;">
+    <div class="kpi-row" id="kpiRow"></div>
+    <div class="main-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div>
+        <div class="section-title">Avance por regional</div>
+        <div class="regionals" id="regionalList"></div>
+      </div>
+      <div>
+        <div class="section-title">Distribución por regional</div>
+        <div class="chart-section" style="padding:10px 14px;">
+          <div class="legend" id="chartLegend"></div>
+          <div style="position:relative; height:310px;"><canvas id="barChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="emptyState" class="empty-state">
+    <div class="empty-icon">📁</div>
+    <div class="empty-title">Carga tu reporte de mantenimientos</div>
+    <div class="empty-desc">El dashboard se generará automáticamente con los datos del archivo Excel.</div>
+  </div>
+
+  <div class="footer-brand">Bot desarrollado por el Ing. Javier Trujillo · Coordinador IT en Sitio</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const COLORS = {
+  'Bogotá':'#2a78d6','Bogota':'#2a78d6',
+  'Medellín':'#1baf7a','Medellin':'#1baf7a',
+  'Cali':'#eda100',
+  'Costa':'#4a3aa7',
+};
+const DEFAULT_COLORS = ['#2a78d6','#1baf7a','#eda100','#4a3aa7','#e34948','#eb6834','#e87ba4','#008300'];
+let barChartInst = null;
+
+function getColor(name, idx) { return COLORS[name] || DEFAULT_COLORS[idx % DEFAULT_COLORS.length]; }
+function pctColor(p) { return p >= 80 ? '#1baf7a' : p >= 50 ? '#eda100' : '#e34948'; }
+
+function handleDragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('dragging'); }
+function handleDragLeave() { document.getElementById('uploadZone').classList.remove('dragging'); }
+function handleDrop(e) { e.preventDefault(); handleDragLeave(); const f = e.dataTransfer.files[0]; if (f) processFile(f); }
+function handleFile(e) { const f = e.target.files[0]; if (f) processFile(f); e.target.value = ''; }
+
+function processFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+      if (!rows.length) { alert('El archivo está vacío.'); return; }
+      analyzeData(rows);
+    } catch { alert('No se pudo leer el archivo. Verifica que sea .xlsx, .xls o .csv válido.'); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function normalizeKey(row, candidates) {
+  for (const k of Object.keys(row))
+    for (const c of candidates)
+      if (k.toLowerCase().trim().includes(c.toLowerCase())) return k;
+  return null;
+}
+
+function isCompleted(val) {
+  const v = String(val).toLowerCase().trim();
+  return v.includes('complet') || v.includes('cerrad') || v.includes('resuel') || v === 'si' || v === 'sí' || v === 'done' || v === '1' || v === 'yes';
+}
+
+function isFormatoTotales(rows) {
+  // Detecta si el archivo ya trae totales por regional (Total tiendas / Total Realizadas)
+  const keys = Object.keys(rows[0]).map(k => k.toLowerCase().trim());
+  return keys.some(k => k.includes('total') && (k.includes('tienda') || k.includes('realiz') || k.includes('program')));
+}
+
+function analyzeData(rows) {
+  // Filtrar filas vacías o de resumen (Promedio, Total general, etc.)
+  const dataRows = rows.filter(row => {
+    const firstVal = String(Object.values(row)[0]).trim().toLowerCase();
+    return firstVal && !['promedio','total','subtotal','general',''].includes(firstVal);
+  });
+
+  if (!dataRows.length) { alert('No se encontraron datos válidos.'); return; }
+
+  if (isFormatoTotales(dataRows)) {
+    analyzeFormatoTotales(dataRows);
+  } else {
+    analyzeFormatoDetalle(dataRows);
+  }
+}
+
+function analyzeFormatoTotales(rows) {
+  const kR  = normalizeKey(rows[0], ['regional','region','sede']);
+  const kTT = normalizeKey(rows[0], ['total tiend','tiend','program', 'total_t']);
+  const kTR = normalizeKey(rows[0], ['realiz','ejecut','completad','total_r']);
+  // Fallback: columna de avance numérico
+  const kAv = normalizeKey(rows[0], ['avance']);
+
+  const map = {};
+  rows.forEach(row => {
+    const reg = kR ? String(row[kR]).trim() : 'Sin regional';
+    if (!reg) return;
+
+    let total = 0, completado = 0;
+
+    if (kTT && kTR) {
+      total     = parseFloat(String(row[kTT]).replace(/[^0-9.]/g,'')) || 0;
+      completado = parseFloat(String(row[kTR]).replace(/[^0-9.]/g,'')) || 0;
+    } else if (kAv) {
+      // Solo tiene columna de avance numérico: lo usamos como % directamente
+      const av = parseFloat(String(row[kAv]).replace(/[^0-9.]/g,'')) || 0;
+      total = 100; completado = av;
+    }
+
+    if (total > 0) map[reg] = { total, completado };
+  });
+
+  const totalGen = Object.values(map).reduce((s,r) => s + r.total, 0);
+  const compGen  = Object.values(map).reduce((s,r) => s + r.completado, 0);
+  renderDashboard(map, totalGen, compGen);
+}
+
+function analyzeFormatoDetalle(rows) {
+  const kR = normalizeKey(rows[0], ['regional','region','sede','ciudad']);
+  const kE = normalizeKey(rows[0], ['estado','status','avance','completado','result']);
+  const map = {};
+  let total = 0, completado = 0;
+  rows.forEach(row => {
+    const reg  = kR ? (String(row[kR]).trim() || 'Sin regional') : 'Sin regional';
+    const comp = kE ? isCompleted(row[kE]) : false;
+    if (!map[reg]) map[reg] = { total: 0, completado: 0 };
+    map[reg].total++;
+    if (comp) map[reg].completado++;
+    total++;
+    if (comp) completado++;
+  });
+  renderDashboard(map, total, completado);
+}
+
+function renderDashboard(map, total, completado) {
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('dashContent').style.display = 'block';
+
+  const regNames = Object.keys(map).sort((a,b) => (map[b].completado/map[b].total) - (map[a].completado/map[a].total));
+  const pctInd   = regNames.map(n => map[n].total > 0 ? Math.round((map[n].completado / map[n].total) * 100) : 0);
+  const promedio  = Math.round(pctInd.reduce((a,b) => a+b, 0) / regNames.length);
+  const pctAcum   = total > 0 ? Math.round((completado / total) * 100) : 0;
+
+  const badge = document.getElementById('statusBadge');
+  badge.textContent = promedio >= 80 ? 'En meta' : promedio >= 50 ? 'En progreso' : 'Crítico';
+  badge.className = 'badge ' + (promedio >= 80 ? 'badge-success' : promedio >= 50 ? 'badge-warning' : 'badge-danger');
+
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi kpi-highlight">
+      <div class="kpi-label">Promedio regionales</div>
+      <div class="kpi-value">${promedio}%</div>
+      <div class="kpi-sub">(${pctInd.join('% + ')}%) ÷ ${regNames.length}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Avance acumulado</div>
+      <div class="kpi-value" style="color:${pctColor(pctAcum)}">${pctAcum}%</div>
+      <div class="kpi-sub">${completado} de ${total} tiendas</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Completadas</div>
+      <div class="kpi-value">${completado}</div>
+      <div class="kpi-sub">tiendas atendidas</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Pendientes</div>
+      <div class="kpi-value">${total - completado}</div>
+      <div class="kpi-sub">por ejecutar</div>
+    </div>
+  `;
+
+  const list = document.getElementById('regionalList');
+  list.innerHTML = '';
+  regNames.forEach((name, idx) => {
+    const { total: t, completado: c } = map[name];
+    const p = pctInd[idx];
+    const color = getColor(name, idx);
+    list.innerHTML += `
+      <div class="regional-card">
+        <div class="regional-header">
+          <span class="regional-name"><span class="regional-dot" style="background:${color}"></span>${name}</span>
+          <div class="regional-right">
+            <span class="regional-count">${c} / ${t}</span>
+            <span class="regional-pct" style="color:${pctColor(p)}">${p}%</span>
+          </div>
+        </div>
+        <div class="progress-track"><div class="progress-bar" style="width:${p}%; background:${color};"></div></div>
+        <div class="progress-detail"><span>${c} realizadas</span><span>${t - c} pendientes</span></div>
+        <div class="indep-row">
+          <div class="indep-pill" style="background:${color}18;">
+            <div class="indep-pill-label" style="color:${color}">Avance independiente</div>
+            <div class="indep-pill-val" style="color:${color}">${p}% &nbsp;(${c}/${t})</div>
+          </div>
+          <div class="indep-pill" style="background:#f4f3f0; border:0.5px solid #e1e0d9;">
+            <div class="indep-pill-label" style="color:#898781">Peso en promedio</div>
+            <div class="indep-pill-val" style="color:#52514e">${p}% ÷ ${regNames.length} = ${(p/regNames.length).toFixed(1)}%</div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('chartLegend').innerHTML = regNames.map((n,i) => `
+    <span class="legend-item"><span class="legend-sq" style="background:${getColor(n,i)}"></span>${n} ${pctInd[i]}%</span>
+  `).join('');
+
+  if (barChartInst) barChartInst.destroy();
+  barChartInst = new Chart(document.getElementById('barChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: regNames,
+      datasets: [
+        { label: 'Realizadas', data: regNames.map(n => map[n].completado), backgroundColor: regNames.map((n,i) => getColor(n,i)), borderRadius: 4 },
+        { label: 'Pendientes', data: regNames.map(n => map[n].total - map[n].completado), backgroundColor: '#e1e0d9', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { color: '#898781', font: { size: 11 } } },
+        y: { stacked: true, grid: { color: '#e1e0d9', lineWidth: 0.5 }, ticks: { color: '#898781', font: { size: 11 } } }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
